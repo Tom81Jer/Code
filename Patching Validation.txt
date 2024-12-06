@@ -1,0 +1,61 @@
+
+configuration:
+- there are 3 files (server lists) that contain server names (1 server name on each line), file names are: host_primary.yml host_secondary.yml, host_tertiary.yml
+- there is another file "patchingversionlock.yml" that contains a list of patches for each software in software:version format.
+
+Input params: 
+	$mode : mandatory, valueSet "pre", "post"
+variables: Servers, Server, TargetPatches, Target, AvailablePatches, Available, AllServers, IsOnline, ServiceOnline, VersionStatus 
+workflow:
+{
+	read server names from all 3 server lists into $servers
+	read patchingversionlock.yml into $TargetPatches
+	initialize $AllServers
+	if $mode = "pre"{
+		for each $server in $servers{
+			if the $server is online{
+				set $IsOnline to True
+				use 'yum available' command to get patches available on the server, save it in  $AvailablePatches as software:version format
+				for each $Target in $TargetPatches{		
+					if a matching entry exists in $AvailablePatches{
+						save entry in $Available
+						if Available.version >= Target.version 
+							set $versionStatus to True
+						else 
+							set $versionStatus to false
+					}
+				}
+			}
+			else{
+				
+			}
+			add [Server, IsOnline, Target.version, Available.version, versionStatus] to $AllServers
+		}
+	}
+	else {
+		for each $server in $servers{
+			if the $server is online{
+				set $IsOnline to True
+				use $yum installed$ command to get patches installed on the server, save it in  $InstalledPatches as software:version format
+				for each $Target in $TargetPatches{		
+					if a matching entry exists in $InstalledPatches{
+						save entry in $Installed
+						if the service Installed.software on the $Server is online 
+							set $ServiceOnline to True	
+						else 
+							set $ServiceOnline to False
+						if Installed.version = Target.version 
+							set $versionStatus to True
+						else 
+							set $versionStatus to false
+					}
+				}
+			}
+			else{
+				set $IsOnline to false and ServiceOnline, Installed.version, versionStatus to NULL
+			}
+			add [Server, IsOnline, Target.software, ServiceOnline, Target.version, Installed.version, versionStatus] to $AllServers
+		} # end for
+	} #end else
+	Return $AllServers
+}	
