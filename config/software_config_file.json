@@ -1,0 +1,142 @@
+{
+ "software": [
+    {
+   "name": "postgresql12",
+   "install_command": "yum list installed postgresql12-server.x86_64 2>/dev/null | grep -E 'postgresql12-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql12-server.x86_64 2>/dev/null | grep -E 'postgresql12-server.x86_64'  | awk '{gsub(/\\..*/, \"\", $1); print $2}' ",
+   "Enabled": true
+    },
+    {
+   "name": "postgresql13",
+   "install_command": "yum list installed postgresql13-server.x86_64 2>/dev/null | grep -E 'postgresql13-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql13-server.x86_64 2>/dev/null | grep -E 'postgresql13-server.x86_64' | awk '{print $2}'",
+   "Enabled": true
+    },
+    {
+   "name": "postgresql14",
+   "install_command": "yum list installed postgresql14-server.x86_64 2>/dev/null | grep -E 'postgresql14-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql14-server.x86_64 2>/dev/null | grep -E 'postgresql14-server.x86_64' | awk '{print $2}'",
+   "Enabled": true
+    },
+    {
+   "name": "postgresql15",
+   "install_command": "yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{print $2}'",
+   "Enabled": true
+    },
+    {
+   "name": "postgresql16",
+   "install_command": "yum list installed postgresql16-server.x86_64 2>/dev/null | grep -E 'postgresql16-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql16-server.x86_64 2>/dev/null | grep -E 'postgresql16-server.x86_64' | awk '{print $2}'",
+   "Enabled": true
+    },
+    {
+   "name": "pgagent_12",
+   "list_command": "yum list available 'pgagent_12.x86_64' 2>/dev/null | grep 'pgagent_12.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgagent_12.x86_64' 2>/dev/null | grep 'pgagent_12.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "pgagent_13",
+   "list_command": "yum list available 'pgagent_13.x86_64' 2>/dev/null | grep 'pgagent_13.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgagent_13.x86_64' 2>/dev/null | grep 'pgagent_13.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "pgagent_14",
+   "list_command": "yum list available 'pgagent_14.x86_64' 2>/dev/null | grep 'pgagent_14.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgagent_14.x86_64' 2>/dev/null | grep 'pgagent_14.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "pgagent_15",
+   "list_command": "yum list available 'pgagent_15.x86_64' 2>/dev/null | grep 'pgagent_15.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgagent_15.x86_64' 2>/dev/null | grep 'pgagent_15.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "pgagent_16",
+   "list_command": "yum list available 'pgagent_16.x86_64' 2>/dev/null | grep 'pgagent_16.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgagent_16.x86_64' 2>/dev/null | grep 'pgagent_16.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "barman",
+   "list_command": "yum list all 2>/dev/null | grep barman | grep -vi python | grep -v 'barman-cli' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed  2>/dev/null  | grep barman | grep -vi python | grep -v 'barman-cli'| awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "barman-cli",
+   "list_command": "yum list all 2>/dev/null | grep barman-cli | grep -vi python | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 2>/dev/null | grep barman-cli | grep -vi python | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr12",
+   "list_command": "yum list available 'repmgr12.x86_64' 2>/dev/null | grep -E 'repmgr12.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr12.x86_64' 2>/dev/null | grep -E 'repmgr12.x86_64 | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr13",
+   "list_command": "yum list available repmgr13.x86_64' 2>/dev/null | grep -E 'repmgr13.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed repmgr13.x86_64' 2>/dev/null | grep -E 'repmgr13.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr14",
+   "list_command": "yum list available 'repmgr14.x86_64' 2>/dev/null | grep -E 'repmgr14.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr14.x86_64' 2>/dev/null | grep -E 'repmgr14.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr15",
+   "list_command": "yum list available 'repmgr15.x86_64' 2>/dev/null | grep -E 'repmgr15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr15.x86_64' 2>/dev/null | grep -E 'repmgr15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr16",
+   "list_command": "yum list available 'repmgr16.x86_64' 2>/dev/null | grep -E 'repmgr16.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr16.x86_64' 2>/dev/null | grep -E 'repmgr16.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+     {
+   "name": "repmgr_12",
+   "list_command": "yum list available 'repmgr_12.x86_64' 2>/dev/null | grep -E 'repmgr_12.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr_12.x86_64' 2>/dev/null | grep -E 'repmgr_12.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr_13",
+   "list_command": "yum list available 'repmgr_13.x86_64' 2>/dev/null | grep -E 'repmgr_13.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr_13.x86_64' 2>/dev/null | grep -E 'repmgr_13.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr_14",
+   "list_command": "yum list available 'repmgr_14.x86_64' 2>/dev/null | grep -E 'repmgr_14.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr_14.x86_64' 2>/dev/null | grep -E 'repmgr_14.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr_15",
+   "list_command": "yum list available 'repmgr_15.x86_64' 2>/dev/null | grep -E 'repmgr_15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr_15.x86_64' 2>/dev/null | grep -E 'repmgr_15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "repmgr_16",
+   "list_command": "yum list available 'repmgr_16.x86_64' 2>/dev/null | grep -E 'repmgr_16.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'repmgr_16.x86_64' 2>/dev/null | grep -E 'repmgr_16.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    },
+    {
+   "name": "pgbouncer",
+   "list_command": "yum list available 'pgbouncer.x86_64' 2>/dev/null | grep 'pgbouncer.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "install_command": "yum list installed 'pgbouncer.x86_64' 2>/dev/null | grep 'pgbouncer.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1",
+   "Enabled": true
+    }
+ ]
+}
