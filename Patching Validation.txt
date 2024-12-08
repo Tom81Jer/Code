@@ -1,24 +1,48 @@
-Assume you are a python, linux, postgresql, mongodb expert. i have dozens of linux servers, they host postgresql, mongodb databases and related softwares such as barman. we patch these softwares (postgresql, mongodb, barman etc) every month. some servers may have different versions of these softwares than others. Goal is to create a python function to perform validation before and after patching of these softwares. function should have 1 parameter "mode" with "pre" and "post" as the only valid values. If "pre" then we want to check if the yum repository on the server has patches that are at least same version or higher than the patch version in the PatchingVersionLock.yml file for the corresponding software.
+Assume you are a python, linux, postgresql, mongodb expert. i have dozens of linux servers, they host postgresql, mongodb databases softwares and other related softwares such as barman, pgbouncer, repmanager etc. different servers may have differebt versions of the sofwares. we patch these softwares  every month. some servers may have different versions of these softwares than others. 
 
 configuration:
-- there are 3 files (server lists) that contain server names (1 server name on each line), file names are: host_primary.yml host_secondary.yml, host_tertiary.yml
-- there is another file "patchingversionlock.yml" that contains a list of patches for each software in software:version format.
+- server lists: there are 3 files that contain server names:host_primary.yml host_secondary.yml, host_tertiary.yml. 1 server name per line. for example:
+	server012401
+- config file: name is "software_config_file.json". it contains, in json format, server name and yum commands to list available patches and installed patches. for example:
+ {
+   "name": "postgresql12",
+   "install_command": "yum list installed postgresql12-server.x86_64 2>/dev/null | grep -E 'postgresql12-server.x86_64' | awk '{print $2}'",
+   "list_command": "yum list available postgresql12-server.x86_64 2>/dev/null | grep -E 'postgresql12-server.x86_64'  | awk '{gsub(/\\..*/, \"\", $1); print $2}' ",
+   "Enabled": true
+    },
+- file "all.yml" contains target version for each software, 1 software per line, in "software_name: version" format. for example:
+postgresql15_version: 15.10-1
+postgresql16_version: 16.6-1
+pgagent_12_version: 4.2.2-1
+pgagent_13_version: 4.2.2-1
+
+
+Goal is to create a python function to perform validation before and after patching of these softwares. function should have 1 parameter "mode" with "pre" and "post" as the only valid values. "pre" for before patching validation and "post" for after patching validation
+For each server in the 3 server list files:
+before patching ("pre") we want to validate that : 1)the server is online 2) for each software from all.yml that exists on the server: the yum repository on the server has a patch for that software that is same or higher version than what's in the all.yml. 
+For after patching, we want to validate that: 1) server is online 2)each software from all.yml that exists on the server: 2a)service is online 2b) installed version is same as in all.yml.
+
+here's a quick psuedo-code i wrote to help you explain. feel free to use it or ignore it:
 
 Input params: 
 	$mode : [mandatory] valueSet ("pre", "post")
 variables: Servers, Server, TargetPatches, Target, AvailablePatches, Available, AllServers, IsOnline, ServiceOnline, VersionStatus 
 workflow:
 {
-	read server names from all 3 server lists into $servers
-	read patchingversionlock.yml into $TargetPatches
+	read server names from all 3 server lists  into $servers
+	read all.yml into $TargetPatches as software:verson key-value pairs
+	read software_config_file.json into $yumCommands
 	initialize $AllServers
 	if $mode = "pre"{
 		for each $server in $servers{
 			if the $server is online{
 				set $IsOnline to True
-				use 'yum available' command to get patches available on the server, save it in  $AvailablePatches as software:version format
-				for each $Target in $TargetPatches{		
-					if a matching entry exists in $AvailablePatches{
+				for each $software in $yumCommands{
+				  save "list_command" into $cmd
+				  run $cmd command on the server and add output to  $AvailablePatches as software:version format
+				}
+				for each $Target.software in $TargetPatches{		
+					if an entry with matching software exists in $AvailablePatches{
 						save entry in $Available
 						if Available.version >= Target.version 
 							set $versionStatus to True
@@ -37,21 +61,24 @@ workflow:
 		for each $server in $servers{
 			if the $server is online{
 				set $IsOnline to True
-				use $yum installed$ command to get patches installed on the server, save it in  $InstalledPatches as software:version format
-				for each $Target in $TargetPatches{		
-					if a matching entry exists in $InstalledPatches{
-						save entry in $Installed
-						if the service Installed.software on the $Server is online 
-							set $ServiceOnline to True	
-						else 
-							set $ServiceOnline to False
-						if Installed.version = Target.version 
-							set $versionStatus to True
-						else 
-							set $versionStatus to false
-					}
+			   for each $software in $yumCommands{
+				  save "install_command" into $cmd
+				  run $cmd command on the server and add output to  $InstalledPatches as software:version format
+			   }
+			   for each $Target in $TargetPatches{		
+				if an entry with matching software exists in $InstalledPatches{
+					save entry in $Installed
+					if the service $Installed.software on the $Server is online 
+						set $ServiceOnline to True	
+					else 
+						set $ServiceOnline to False
+					if Installed.version = Target.version 
+						set $versionStatus to True
+					else 
+						set $versionStatus to false
 				}
-			}
+			    } #end for
+			} # end if
 			else{
 				set $IsOnline to false and ServiceOnline, Installed.version, versionStatus to NULL
 			}
