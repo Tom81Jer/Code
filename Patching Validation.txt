@@ -1,3 +1,4 @@
+Assume you are a python, linux, postgresql, mongodb expert. i have dozens of linux servers, they host postgresql, mongodb databases and related softwares such as barman. we patch these softwares (postgresql, mongodb, barman etc) every month. some servers may have different versions of these softwares than others. Goal is to create a python function to perform validation before and after patching of these softwares. function should have 1 parameter "mode" with "pre" and "post" as the only valid values. If "pre" then we want to check if the yum repository on the server has patches that are at least same version or higher than the patch version in the PatchingVersionLock.yml file for the corresponding software.
 
 configuration:
 - there are 3 files (server lists) that contain server names (1 server name on each line), file names are: host_primary.yml host_secondary.yml, host_tertiary.yml
