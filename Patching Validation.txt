@@ -4,7 +4,7 @@ configuration:
 - there is another file "patchingversionlock.yml" that contains a list of patches for each software in software:version format.
 
 Input params: 
-	$mode : mandatory, valueSet "pre", "post"
+	$mode : [mandatory] valueSet ("pre", "post")
 variables: Servers, Server, TargetPatches, Target, AvailablePatches, Available, AllServers, IsOnline, ServiceOnline, VersionStatus 
 workflow:
 {
