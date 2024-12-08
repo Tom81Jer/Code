@@ -1,0 +1,15 @@
+postgresql12_version: 12.22-2
+postgresql13_version: 13.18-2
+postgresql14_version: 14.15-2
+postgresql15_version: 15.10-1
+postgresql16_version: 16.6-1
+pgagent_12_version: 4.2.2-1
+pgagent_13_version: 4.2.2-1
+pgagent_14_version: 4.2.2-1
+pgagent_15_version: 4.2.2-1
+pgagent_16_version: 4.2.2-3
+barman_version: 3.11.1-1
+barman_cli_version: 3.11.1-1
+repmgr_15_version: 5.4.1-1
+repmgr_16_version: 5.4.1-1
+pgbouncer_version: 1.23.1-1
