@@ -1,5 +1,7 @@
-postgresql 15, 16
+postgresql 15, 16 repmgr
 yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{print $2}'
+'15.10-1PGDG.rhel9'
 
 pgbouncer and barman-cli
 yum list all 2>/dev/null | grep barman-cli | grep -vi python | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1
+'1.23.1-1.el9
