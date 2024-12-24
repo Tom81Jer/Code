@@ -4,9 +4,15 @@ yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql1
 updated:
 yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{split($2, a, "-"); gsub(/\\..*/, "", a[1]); print a[1] "-" substr(a[2], 1, 1)}'
 
-pgbouncer and barman-cli
+ barman-cli
 yum list installed 2>/dev/null | grep barman-cli | grep -vi python | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1
 '1.23.1-1.el9
 
 updated:
 yum list installed 2>/dev/null | grep barman-cli | grep -vi python | awk '{print $2}' | awk -F'-' '{print $1 "-" substr($2, 1, 1)}' | sort -t: -k2,2V | tail -n1
+
+repmgr_15
+yum list installed 'repmgr_15.x86_64' 2>/dev/null | grep -E 'repmgr_15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1
+
+pgbouncer:
+yum list installed 'pgbouncer.x86_64' 2>/dev/null | grep 'pgbouncer.x86_64' | awk '{gsub(/\\..*/, \"\", $1); print $2}' | sort -t: -k2,2V | tail -n1
