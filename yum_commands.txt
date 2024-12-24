@@ -1,3 +1,15 @@
+  "command1": "yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{split($2, a, \"-\"); gsub(/\\\\..*/, \"\", a[1]); print a[1] \"-\" substr(a[2], 1, 1)}'"
+
+
+  "command2": "yum list installed 2>/dev/null | grep barman-cli | grep -vi python | awk '{print $2}' | awk -F'-' '{print $1 \"-\" substr($2, 1, 1)}' | sort -t: -k2,2V | tail -n1"
+
+  "command3": "yum list installed 'repmgr_15.x86_64' 2>/dev/null | grep -E 'repmgr_15.x86_64' | grep -v 'devel' | grep -v 'vmjit' | awk '{print $2}' | awk -F'-' '{print $1 \"-\" substr($2, 1, 1)}' | sort -t: -k2,2V | tail -n1"
+
+  "command4": "yum list installed 'pgbouncer.x86_64' 2>/dev/null | grep 'pgbouncer.x86_64' | awk '{print $2}' | awk -F'-' '{print $1 \"-\" substr($2, 1, 1)}' | sort -t: -k2,2V | tail -n1"
+
+
+
+
 postgresql 15, 16 repmgr
 yum list installed postgresql15-server.x86_64 2>/dev/null | grep -E 'postgresql15-server.x86_64' | awk '{print $2}'
 '15.10-1PGDG.rhel9'
