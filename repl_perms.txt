@@ -1,0 +1,84 @@
+To configure SQL Server Transactional Replication without granting sysadmin privileges, the following are the bare minimum permissions required for the replication accounts (Snapshot Agent, Distribution Agent, and Log Reader Agent) across SQL Server 2016, 2019, and 2022. These permissions are slightly overestimated to ensure compatibility across all versions:
+
+1. Snapshot Agent Account
+The Snapshot Agent generates the initial snapshot of the publication and writes it to the snapshot folder. It requires the following permissions:
+
+Database-Level Permissions:
+
+db_owner role in the publication database.
+
+db_owner role in the distribution database.
+
+Server-Level Permissions:
+
+VIEW ANY DATABASE (required for SQL Server 2016 and later).
+
+CONNECT SQL (to connect to the SQL Server instance).
+
+File System Permissions:
+
+Read/Write permissions on the snapshot folder (shared folder where snapshots are stored).
+
+2. Log Reader Agent Account
+The Log Reader Agent monitors the transaction log of the publication database and copies transactions marked for replication to the distribution database. It requires the following permissions:
+
+Database-Level Permissions:
+
+db_owner role in the publication database.
+
+db_owner role in the distribution database.
+
+Server-Level Permissions:
+
+VIEW ANY DATABASE (required for SQL Server 2016 and later).
+
+CONNECT SQL (to connect to the SQL Server instance).
+
+3. Distribution Agent Account
+The Distribution Agent applies the snapshot and subsequent transactions to the subscriber. It requires the following permissions:
+
+Database-Level Permissions:
+
+db_owner role in the subscription database (on the subscriber).
+
+db_owner role in the distribution database (on the distributor).
+
+Server-Level Permissions:
+
+VIEW ANY DATABASE (required for SQL Server 2016 and later).
+
+CONNECT SQL (to connect to the SQL Server instance).
+
+Additional Notes:
+Snapshot Folder Permissions:
+
+Ensure the Snapshot Agent account has Read/Write permissions on the shared snapshot folder.
+
+Ensure the Distribution Agent account has Read permissions on the shared snapshot folder.
+
+Replication-Specific Roles:
+
+If you want to avoid granting db_owner, you can use the following roles (but this may require additional testing):
+
+db_ddladmin (for schema changes).
+
+db_datareader (for reading data).
+
+db_datawriter (for writing data).
+
+However, using db_owner is recommended to avoid potential issues.
+
+SQL Server Agent:
+
+Ensure the SQL Server Agent service account has sufficient permissions to execute the replication jobs. This account typically needs sysadmin or a proxy account with the necessary permissions.
+
+Cross-Version Considerations:
+
+SQL Server 2016 introduced stricter permission requirements (e.g., VIEW ANY DATABASE), so these permissions are included to ensure compatibility across 2016, 2019, and 2022.
+
+Summary of Permissions:
+Agent	Database-Level	Server-Level	File System
+Snapshot Agent	db_owner (publication, distribution DBs)	VIEW ANY DATABASE, CONNECT SQL	Read/Write on snapshot folder
+Log Reader Agent	db_owner (publication, distribution DBs)	VIEW ANY DATABASE, CONNECT SQL	N/A
+Distribution Agent	db_owner (subscription, distribution DBs)	VIEW ANY DATABASE, CONNECT SQL	Read on snapshot folder
+By following these permissions, you can avoid granting sysadmin access while ensuring the replication agents function correctly across SQL Server 2016, 2019, and 2022.
