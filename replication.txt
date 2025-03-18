@@ -1,0 +1,153 @@
+imagine you are an expert in Sql server replication and powershell scripting. i have a few sql servers 2016 version that i am migrating to newly built sql 2022 servers (enterprise edition). i need powershell script that i can run against each source sql server (publisher, distributor, subscriber) to generate T-sql scripts to set up publisher, distributor, subscribers, create publications with articles, create "pull" subscriptions on the subscribers, run snapshots on the new servers. 
+please make sure the script has following features:
+- it can be run from a remote host. 
+- it should output 1 sql script per publication or subscription. output scripts will be executed directly on the target sql servers in SSMS with sysadmin access.
+- it uses current users windows auth to connect the sql servers
+- it takes 5 prams: source_publisher, target_publsiher, target_distributor, snapshot_folder (for storing snapshots), output_folder (to store output scripts)
+- it reads from the surce server but output scripts should have target publisher and target_distributor names for publisher and distributor, so that it can be run on the target server as is (without having to udpate it)
+- it saves all scripts under output_folder, uses/creates subfolder for  source server, and inside it uses/creates a separate folder for each subscriber
+- all sql servers are on-prem VMs (no azure, no cloud), case-insensitive, default collation. 
+- per microsoft one should run on the publisher  a sp_addsubscription command with @sync_type = 'Replication Support Only' before running sp_addpullsubscription on the subscriber. if that recommendation is still valid, please follow it.
+
+if you need more info to create the script let me know first instead of making assumptions. 
+
+
+# ReplicationMigrationGenerator.ps1
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$source_publisher,
+    [Parameter(Mandatory=$true)]
+    [string]$target_publisher,
+    [Parameter(Mandatory=$true)]
+    [string]$target_distributor,
+    [Parameter(Mandatory=$true)]
+    [string]$snapshot_folder,
+    [Parameter(Mandatory=$true)]
+    [string]$output_folder
+)
+
+# Load required assemblies
+Add-Type -AssemblyName "Microsoft.SqlServer.Smo, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
+Add-Type -AssemblyName "Microsoft.SqlServer.Rmo, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
+Add-Type -AssemblyName "Microsoft.SqlServer.Replication, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
+
+try {
+    # Create root folder structure
+    $sourceRoot = Join-Path -Path $output_folder -ChildPath $source_publisher
+    New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
+
+    # Connect to source publisher
+    $sourceServer = New-Object Microsoft.SqlServer.Management.Smo.Server $source_publisher
+    $sourceServer.ConnectionContext.LoginSecure = $true
+    $sourceServer.ConnectionContext.Connect()
+
+    # Generate Distributor configuration script
+    $distributorPath = Join-Path -Path $sourceRoot -ChildPath "Distributor"
+    New-Item -ItemType Directory -Path $distributorPath -Force | Out-Null
+    
+    $distributorScript = $sourceServer.Replication.GenerateScript($false) -replace 
+        [Regex]::Escape($source_publisher), $target_distributor
+    $distributorScript | Out-File (Join-Path -Path $distributorPath -ChildPath "ConfigureDistributor.sql")
+
+    # Generate Publisher configuration script
+    $publisherScript = @"
+EXEC sp_adddistpublisher 
+    @publisher = N'$target_publisher',
+    @distribution_db = N'distribution',
+    @security_mode = 1,
+    @working_directory = N'$snapshot_folder',
+    @thirdparty_flag = 0,
+    @publisher_type = N'MSSQLSERVER';
+"@
+    $publisherScript | Out-File (Join-Path -Path $sourceRoot -ChildPath "ConfigurePublisher.sql")
+
+    # Process publications
+    foreach ($pubDb in $sourceServer.ReplicationDatabases) {
+        $pubPath = Join-Path -Path $sourceRoot -ChildPath "Publications\$($pubDb.Name)"
+        New-Item -ItemType Directory -Path $pubPath -Force | Out-Null
+
+        foreach ($publication in $pubDb.TransPublications) {
+            $publicationFileName = Join-Path -Path $pubPath -ChildPath "$($publication.Name).sql"
+            
+            # Generate publication script with target names
+            $pubScript = $publication.Script() -replace 
+                [Regex]::Escape($source_publisher), $target_publisher
+            
+            # Add snapshot folder configuration
+            $pubScript += "`nEXEC sp_changepublication @publication = N'$($publication.Name)',"
+            $pubScript += " @property = N'snapshot_in_defaultfolder', @value = 'false';`n"
+            $pubScript += "EXEC sp_changepublication @publication = N'$($publication.Name)',"
+            $pubScript += " @property = N'alt_snapshot_folder', @value = N'$snapshot_folder';`n"
+            
+            $pubScript | Out-File $publicationFileName
+
+            # Add Publication Access List (PAL) grants
+            $palLogins = $publication.EnumPublicationAccessList() | 
+                        Select-Object -ExpandProperty LoginName
+            
+            if ($palLogins.Count -gt 0) {
+                $palScript = "`n-- Publication Access List Grants`n"
+                foreach ($login in $palLogins) {
+                    $palScript += "EXEC sp_grant_publication_access " +
+                        "@publication = N'$($publication.Name)', " +
+                        "@login = N'$login';`n"
+                }
+                $palScript | Add-Content -Path $publicationFileName
+            }
+
+            # Process subscriptions
+            foreach ($sub in $publication.TransSubscriptions) {
+                $subPath = Join-Path -Path $sourceRoot -ChildPath "Subscriptions\$($sub.Subscriber)"
+                New-Item -ItemType Directory -Path $subPath -Force | Out-Null
+                
+                # Generate subscription scripts with Microsoft best practices
+                $subscriptionScript = @"
+-- Publisher configuration
+EXEC sp_addsubscription 
+    @publication = N'$($publication.Name)',
+    @subscriber = N'$($sub.Subscriber)',
+    @destination_db = N'$($sub.DestinationDatabase)',
+    @sync_type = N'replication support only',
+    @subscription_type = N'pull';
+
+-- Subscriber configuration
+EXEC sp_addpullsubscription 
+    @publisher = N'$target_publisher',
+    @publication = N'$($publication.Name)',
+    @publisher_db = N'$($pubDb.Name)',
+    @independent_agent = N'True',
+    @subscription_type = N'pull',
+    @description = N'',
+    @update_mode = N'read only';
+
+EXEC sp_addpullsubscription_agent 
+    @publisher = N'$target_publisher',
+    @publisher_db = N'$($pubDb.Name)',
+    @publication = N'$($publication.Name)',
+    @distributor = N'$target_distributor',
+    @distributor_security_mode = 1;
+"@
+                $subscriptionScript | Out-File (Join-Path -Path $subPath -ChildPath "$($publication.Name)_Subscription.sql")
+            }
+        }
+    }
+
+    # Generate snapshot agent script
+    $snapshotScript = @"
+:setvar PublisherName "$target_publisher"
+:setvar PublicationDBName "<PublicationDB>"
+:setvar PublicationName "<Publication>"
+
+EXEC sp_startpublication_snapshot 
+    @publication = N'$(PublicationName)',
+    @publisher = N'$(PublisherName)',
+    @publisher_db = N'$(PublicationDBName)';
+"@
+    $snapshotScript | Out-File (Join-Path -Path $sourceRoot -ChildPath "SnapshotAgentTemplate.sql")
+
+    Write-Host "Script generation completed successfully! Output directory: $sourceRoot"
+}
+catch {
+    Write-Error "Error occurred: $_"
+    exit 1
+}
