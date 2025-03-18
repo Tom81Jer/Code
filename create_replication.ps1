@@ -5,9 +5,43 @@ param (
     [string]$target_publisher,       # The target publisher SQL server
     [string]$target_distributor,     # The target distributor SQL server
     [string]$snapshot_folder,        # Folder path for snapshot storage
-    [string]$output_folder,          # Folder path to store output scripts
-    [string]$subscription_user       # The SQL Server login to grant PAL permissions
+    [string]$output_folder           # Folder path to store output scripts
 )
+
+# Function to retrieve a list of replication users from the publisher
+function Get-ReplicationUsers {
+    param (
+        [string]$publisher
+    )
+    
+    $connectionString = "Server=$publisher;Integrated Security=True;"
+
+    # SQL query to get users in the Publication Access List (PAL)
+    $query = @"
+    SELECT login FROM sys.syslogins
+    WHERE name IN (
+        SELECT login
+        FROM msdb.dbo.sysreplicationaliases
+        WHERE publisher = '$publisher'
+    );
+    "@
+
+    # Execute the query and return results
+    $result = Invoke-Sqlcmd -Query $query -ConnectionString $connectionString
+    return $result
+}
+
+# Retrieve replication users from the publisher
+$replicationUsers = Get-ReplicationUsers -publisher $source_publisher
+
+# Assuming you retrieve a valid user (just using the first one found for simplicity)
+if ($replicationUsers.Count -gt 0) {
+    $subscription_user = $replicationUsers[0].login
+    Write-Host "Using subscription user: $subscription_user"
+} else {
+    Write-Host "No replication users found on the publisher. Please ensure the PAL is populated."
+    exit
+}
 
 # Helper function to write the SQL script to the output file
 function Write-SqlScript {
