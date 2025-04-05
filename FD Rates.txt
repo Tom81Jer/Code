@@ -1,0 +1,20 @@
+
+criteria for bank selection:
+	- dicgc INSURED
+	- allows online fund transfer  
+	- has branch in jalgaon
+	- home service
+
+	FD Rates for senior more than 1 cr, less than 3 cr:
+
+Bank	6mo	  1yr	15mo
+--------------------------
+SBI 	6.75  7.3
+ICICI	6.25  7.2	7.85
+HDFC 	6.25  7.1   7.6
+Axis    6.25  7.2   7.75
+Axis	7.3   7.55  7.45  (early withdrawal not allowed)
+IDFC	6.25  8.0   8.4 (13.5 mo)
+RBL 	6	  8.0	8.3 
+Central 6.75  7.35  
+bank
