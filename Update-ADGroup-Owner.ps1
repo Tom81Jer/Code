@@ -20,12 +20,9 @@ $IncompleteGroups = $Groups | Where-Object {
 }
 
 # Output results
-if ($IncompleteGroups.Count -eq 0) {
-    Write-Host "✅ All 'SQL' groups have the necessary properties set." -ForegroundColor Green
-} else {
-    Write-Host "🔍 Found $($IncompleteGroups.Count) 'SQL' groups with missing attributes:" -ForegroundColor Yellow
-    $IncompleteGroups | Select-Object Name, managedBy, extensionAttribute1 | Format-Table -AutoSize
-}
+$IncompleteGroups | Select-Object  Name, extensionAttribute1,  @{Name = "ManagerCN"; Expression = {
+        if ($_.managedBy -match "CN=([^,]+)") { $matches[1] } else { "Not Set" }
+    }}
 =======================================================
 # Import Active Directory module
 Import-Module ActiveDirectory
