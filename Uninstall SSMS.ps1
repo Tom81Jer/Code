@@ -21,3 +21,40 @@ foreach ($server in $servers) {
         }
     } 
 }
+
+# List of target computers
+$computers = @("Server01", "Server02", "Server03")
+
+# Hashtable to store job references
+$jobs = @{}
+
+foreach ($computer in $computers) {
+    Write-Host "Sending restart command to $computer..." -ForegroundColor Cyan
+
+    # Start a remote job to restart computer
+    $jobs[$computer] = Invoke-Command -ComputerName $computer -ScriptBlock {
+        try {
+            Restart-Computer -Force -Confirm:$false
+            "Success"
+        } catch {
+            "Failure: $($_.Exception.Message)"
+        }
+    } -AsJob
+}
+
+# Wait for jobs to complete
+$jobs.Values | Wait-Job
+
+# Collect and display results
+foreach ($computer in $computers) {
+    $job = $jobs[$computer]
+    $result = Receive-Job -Job $job
+    if ($result -eq "Success") {
+        Write-Host "$computer restarted successfully." -ForegroundColor Green
+    } else {
+        Write-Host "$computer restart failed: $result" -ForegroundColor Red
+    }
+
+    # Clean up
+    Remove-Job -Job $job
+}
