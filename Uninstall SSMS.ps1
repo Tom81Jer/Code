@@ -7,7 +7,7 @@ foreach ($server in $servers) {
     Invoke-Command -ComputerName $server -ScriptBlock {
         # Get list of installed programs
         $installed = Get-WmiObject -Class Win32_Product | Where-Object {
-            $_.Name -like "*Microsoft SQL Server Management Studio*"
+            $_.Name -like "*SQL Server Management Studio*"
         }
 
         if ($installed) {
@@ -20,56 +20,4 @@ foreach ($server in $servers) {
             Write-Host "SSMS not found on $env:COMPUTERNAME." -ForegroundColor Red
         }
     } 
-}
-
-# List of target computers
-$computers = @("Server01", "Server02", "Server03")
-
-# Hashtable to store job references
-$jobs = @{}
-
-foreach ($computer in $computers) {
-    Write-Host "Sending restart command to $computer..." -ForegroundColor Cyan
-
-    # Start a remote job to restart computer
-    $jobs[$computer] = Invoke-Command -ComputerName $computer -ScriptBlock {
-        try {
-            Restart-Computer -Force -Confirm:$false
-            "Success"
-        } catch {
-            "Failure: $($_.Exception.Message)"
-        }
-    } -AsJob
-}
-
-# Wait for jobs to complete
-$jobs.Values | Wait-Job
-
-# Collect and display results
-foreach ($computer in $computers) {
-    $job = $jobs[$computer]
-    $result = Receive-Job -Job $job
-    if ($result -eq "Success") {
-        Write-Host "$computer restarted successfully." -ForegroundColor Green
-    } else {
-        Write-Host "$computer restart failed: $result" -ForegroundColor Red
-    }
-
-    # Clean up
-    Remove-Job -Job $job
-}
-
-## Get Last reboot date
-# List of remote computers
-$computers = @("Server01", "Server02", "Server03")
-
-# Iterate and query reboot time
-foreach ($computer in $computers) {
-    try {
-        $os = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $computer -ErrorAction Stop
-        $lastBoot = [Management.ManagementDateTimeConverter]::ToDateTime($os.LastBootUpTime)
-        Write-Host "$computer last rebooted on: $lastBoot" -ForegroundColor Green
-    } catch {
-        Write-Host "Failed to retrieve data from $computer: $($_.Exception.Message)" -ForegroundColor Red
-    }
 }
