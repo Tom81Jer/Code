@@ -58,3 +58,18 @@ foreach ($computer in $computers) {
     # Clean up
     Remove-Job -Job $job
 }
+
+## Get Last reboot date
+# List of remote computers
+$computers = @("Server01", "Server02", "Server03")
+
+# Iterate and query reboot time
+foreach ($computer in $computers) {
+    try {
+        $os = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $computer -ErrorAction Stop
+        $lastBoot = [Management.ManagementDateTimeConverter]::ToDateTime($os.LastBootUpTime)
+        Write-Host "$computer last rebooted on: $lastBoot" -ForegroundColor Green
+    } catch {
+        Write-Host "Failed to retrieve data from $computer: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
