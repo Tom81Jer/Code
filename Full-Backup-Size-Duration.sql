@@ -2,10 +2,9 @@ SELECT
     bs.database_name,
     MAX(bs.backup_start_date) AS backup_start_date,
     MAX(bs.backup_finish_date) AS backup_finish_date,
-    DATEDIFF(SECOND, MAX(bs.backup_start_date), MAX(bs.backup_finish_date)) AS duration_seconds,
     DATEDIFF(MINUTE, MAX(bs.backup_start_date), MAX(bs.backup_finish_date)) AS duration_minutes,
-    SUM(bs.backup_size) / 1024.0 / 1024.0 / 1024.0 AS total_backup_size_gb,
-    SUM(bs.compressed_backup_size) / 1024.0 / 1024.0 / 1024.0 AS total_compressed_size_gb,
+    CEILING(SUM(bs.backup_size) / 1024.0 / 1024.0 / 1024.0) AS total_backup_size_gb,
+    CEILING(SUM(bs.compressed_backup_size) / 1024.0 / 1024.0 / 1024.0) AS total_compressed_size_gb,
     STRING_AGG(bmf.physical_device_name, ', ') AS backup_files
 FROM msdb.dbo.backupset bs
 JOIN msdb.dbo.backupmediafamily bmf
