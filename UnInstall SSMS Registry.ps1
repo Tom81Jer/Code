@@ -11,14 +11,13 @@ foreach ($computer in $computers) {
         foreach ($path in $paths) {
             $apps = Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
                 Where-Object { $_.DisplayName -match $using:regex }
-
+            Write-Host "Processing $env:COMPUTERNAME ..."
             foreach ($app in $apps) {
-                Write-Host "Found on $env:COMPUTERNAME: $($app.DisplayName) $($app.DisplayVersion)"
                 if ($app.UninstallString) {
-                    Write-Host "Uninstalling: $($app.DisplayName)"
+                    Write-Host "    Uninstalling: $($app.DisplayName)"
                     Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$($app.UninstallString)`"" -Wait
                 } else {
-                    Write-Warning "No uninstall string found for $($app.DisplayName)"
+                    Write-Warning "    No uninstall string found for $($app.DisplayName)"
                 }
             }
         }
