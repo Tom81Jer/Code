@@ -30,7 +30,8 @@ foreach ($computer in $computers) {
 
 # Final summary
 if ($serversWithMatches.Count -gt 0) {
-    Write-Host "`nServers with matching software: $($serversWithMatches -join ', ')" -ForegroundColor Green
+    $list = '"' + ($serversWithMatches -join '", "') + '"'
+    Write-Host "`nServers with matching software: $list" -ForegroundColor Green
 } else {
     Write-Host "`nNo matching software found on any server." -ForegroundColor Yellow
 }
