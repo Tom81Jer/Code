@@ -1,0 +1,124 @@
+Remediation actions (concrete fixes)
+A — Quick check/fix for AD permission problem
+
+On a Domain Controller or a workstation with RSAT:
+
+# show which machines are allowed to retrieve the gMSA password
+Get-ADServiceAccount -Identity sql_snap$ -Properties msDS-AllowedToRetrieveManagedPassword | 
+    Select-Object Name,@{n='Allowed';e={$_.msDS-AllowedToRetrieveManagedPassword}}
+
+
+If the distributor computer account is not present, add it:
+
+# From a privileged account
+# Option 1: Allow a computer account
+Set-ADServiceAccount -Identity sql_snap$ -PrincipalsAllowedToRetrieveManagedPassword @{Add='DOMAIN\DISTSERVER$'}
+
+# Option 2: Allow a security group that contains the distributor servers
+Set-ADServiceAccount -Identity sql_snap$ -PrincipalsAllowedToRetrieveManagedPassword @{Add='DOMAIN\grp-SQL-Repl-Servers$'}
+
+
+After making changes, re-run on the distributor:
+
+Install-ADServiceAccount -Identity sql_snap$
+Test-ADServiceAccount -Identity sql_snap$
+
+
+Test-ADServiceAccount must return True.
+
+B — Ensure SQL uses the gMSA correctly for the agent job
+
+Two options: (1) use SQL Agent service running as the gMSA, or (2) keep agent service as-is and configure the replication job steps to explicitly run under the gMSA credential/proxy.
+
+Option 1 — Recommended for simplicity / minimized impersonation complexity
+
+Change SQL Server service (and SQL Server Agent) to run under the corresponding gMSA (e.g., DOMAIN\sql_dist$ for the Distributor instance).
+
+Update Service logon in Services.msc or Configuration Manager to DOMAIN\sql_dist$ (no password entry required; just the principal name).
+
+Grant the gMSA the necessary privileges (Log on as a service is automatic for gMSA; still ensure permissions on files/shares).
+
+Restart services.
+
+Pros: simplifies credential issues because the service runs natively as the gMSA.
+
+Cons: if you want different gMSAs for different agents you may need separate instance/service accounts.
+
+Option 2 — Keep SQL Agent services as is, but create proper SQL Credentials & Proxies
+
+In SSMS, go to Security → Credentials, create a credential whose identity is DOMAIN\sql_snap$.
+
+In the replication Agent Security dialog, choose “Run agent under Windows account” and select the gMSA account — the GUI will create the credential for you if needed.
+
+Then in SQL Agent → Proxies, configure a proxy that uses that credential and ensure the job step uses that proxy (Replication agent job steps normally accept Windows account setting from the replication GUI).
+
+Validate the job step after change and rerun snapshot.
+
+Note: If you attempt to create a SQL Credential for a gMSA manually through T-SQL, don’t attempt to supply a password — let the replication GUI create it or configure the SQL Agent service to run as the gMSA. (Different SQL Server builds and security policies behave differently when you try to create credentials with a blank secret.)
+
+C — Ensure snapshot share permissions
+
+On the snapshot share host:
+
+Share permissions: add DOMAIN\sql_repl group or each DOMAIN\sql_snap$ gMSA and give Read/Write.
+
+NTFS permissions: same as above — the account that will write files must have Modify on the folder.
+
+If you gave permissions to the sql_repl group, confirm the gMSA is actually a member of that group (AD: Get-ADGroupMember sql_repl).
+
+D — If still failing, collect forensic info
+
+On the distributor run klist and check Kerberos tickets around the job run.
+
+In Event Viewer > Security, look for Logon failures (4625) and Kerberos errors (4771) at the time of the job run — these entries show which account failed and why.
+
+Enable verbose agent logging for the failing agent and capture the full textual trace (in the job step properties -> command or agent profile).
+
+Short term workaround (if you need replication running now)
+
+Temporarily configure the Snapshot/Distribution/Log Reader agents to use a regular domain account (one with a password, not a gMSA) that you know works and has permissions on the snapshot share & SQL. That gets replication moving while you fix the gMSA configuration. Then switch back to gMSA once resolved.
+
+Example commands and objects to inspect (copyable)
+
+PowerShell checks:
+
+# On distributor
+Import-Module ActiveDirectory
+Install-ADServiceAccount -Identity sql_snap$
+Test-ADServiceAccount -Identity sql_snap$
+Get-ADServiceAccount -Identity sql_snap$ -Properties msDS-AllowedToRetrieveManagedPassword
+
+# Check membership of sql_repl group
+Get-ADGroupMember -Identity sql_repl | Select Name,SamAccountName
+
+
+SQL checks (run on Distributor msdb):
+
+-- list credentials in msdb
+SELECT name, credential_id FROM msdb.dbo.syscredentials;
+
+-- find replication job steps referencing distribution/snapshot
+SELECT j.name, s.step_name, s.command
+FROM msdb.dbo.sysjobs j
+JOIN msdb.dbo.sysjobsteps s ON j.job_id = s.job_id
+WHERE j.name LIKE '%snapshot%' OR j.name LIKE '%distribution%' OR s.command LIKE '%distribution%';
+
+Final prioritized checklist to run now (short)
+
+On distributor: Test-ADServiceAccount -Identity sql_snap$ (must be True).
+
+Check msDS-AllowedToRetrieveManagedPassword contains distributor computer account. If not, add it and re-test.
+
+In SSMS Replication → Agent Security: confirm the Snapshot/LogReader accounts are exactly DOMAIN\sql_snap$, DOMAIN\sql_logr$, etc and that the GUI created credentials in msdb.
+
+Confirm snapshot share NTFS/share permissions include the gMSA or sql_repl group and that the group membership is correct.
+
+Re-run the snapshot job — if it still fails, grab the job step history text and relevant Windows Event log entries and paste them here (I can interpret them and give exact next steps).
+
+If you want I can:
+
+give the exact Set-ADServiceAccount commands for your environment to add the distributor computer account to the allowed principals,
+
+or give step-by-step GUI instructions to convert the SQL Server and SQL Agent services to run under gMSAs.
+
+Which of those two would you like me to provide right now? (or paste the failing job’s full history text and I’ll read it and tell you exactly which setting is being rejected).
