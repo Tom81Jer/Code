@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adistar LLC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .banner {
+            background: url('light blue.jpg') repeat center center/cover;
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+        }
+        .banner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .banner-content {
+            position: relative;
+            z-index: 1;
+        }
+        .banner h1 {
+            font-size: 64px;
+            margin: 0;
+            color: #ffdc00;
+        }
+        .banner p {
+            font-size: 24px;
+            margin: 10px 0 0;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            position: relative;
+        }
+        nav ul li a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+        }
+        nav ul li a:hover, nav ul li a:focus {
+            background-color: #555;
+        }
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #333;
+        }
+        nav ul li:hover ul, nav ul li:focus-within ul {
+            display: block;
+        }
+        nav ul li ul li {
+            width: 200px;
+        }
+        .services {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+        .services h2 {
+            margin-bottom: 20px;
+            color: #0074d9;
+        }
+        .services p {
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Products</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+    </nav>
+    <div class="banner">
+        <div class="banner-content">
+            <h1>ADISTAR LLC</h1>
+            <p>Your Partner in IT Solutions</p>
+            <p class="contact-info">
+                Phone: 512-777-1659 <br>
+                Email: <a href="mailto:info@adistarllc.com" style="color: white;">info@adistarllc.com</a>
+            </p>
+        </div>
+    </div>
+    <div class="services">
+        <h2>Our Services</h2>
+        <p>We specialize in design, development, support of all types of software systems. Whether you need on-site or offsite consulting, offshore contracting/support/outsourcing, Adistar LLC is here to help. We can help you achieve up to 50% savings in overall costs.</p>
+        <p>Our expertise includes Applications, Websites, Databases, Cloud Computing, and Back-Office Solutions.</p>
+    </div>
+    <div class="footer">
+        &copy; 2024 Adistar LLC. All rights reserved.
+    </div>
+</body>
+</html>

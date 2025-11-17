@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Adistar LLC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .contact-form h2 {
+            margin-bottom: 20px;
+            color: #0074d9;
+        }
+        .contact-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .contact-form .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .contact-form .row .column {
+            width: 48%;
+        }
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .contact-form input[type="submit"] {
+            background-color: #0074d9;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+        .contact-form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .contact-form textarea {
+            height: 150px; /* Increased height for comments section */
+        }
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-form">
+        <h2>Contact Us</h2>
+        <form action="mailto:help@adistarllc.com" method="post" enctype="text/plain">
+            <div class="row">
+                <div class="column">
+                    <label for="first-name">First Name *</label>
+                    <input type="text" id="first-name" name="first-name" required>
+                </div>
+                <div class="column">
+                    <label for="last-name">Last Name *</label>
+                    <input type="text" id="last-name" name="last-name" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="column">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+            </div>
+            <label for="comments">Comments</label>
+            <textarea id="comments" name="comments" rows="5"></textarea>
+            <input type="submit" value="Submit">
+        </form>
+        <div class="home-link">
+            <a href="parking-page.shtml">Go to Home Page</a>
+        </div>
+    </div>
+</body>
+</html>
